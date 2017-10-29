@@ -1,6 +1,8 @@
+
 # Contributed by Olivia
 # make change the sample to a tumblr one
 # OAuth1 Code to access data from the tumblr API...
+
 import requests_oauthlib
 import webbrowser
 import json
@@ -18,7 +20,19 @@ if not client_secret or not client_key:
     print("You need to fill in client_key and client_secret. See comments in the code around line 8-14")
     exit()
 
+def caching():
+    try:
+        gallery_data = open("gallery.html",'r').read()
+    except:
+        gallery_data = requests.get("http://newmantaylor.com/gallery.html").text
+        f = open("gallery.html",'w')
+        f.write(gallery_data)
+        f.close
 
+soup = BeautifulSoup(gallery_data,'html.parser')
+alt_list = soup.find_all('img')
+for alt in alt_list:
+    print(alt.get('alt','No alternative text provided'))
 
 def get_tokens():
     ## Step 1. Obtain a request token which will identify you (the client) in the next step.
@@ -31,7 +45,9 @@ def get_tokens():
     # after this line executes, oauth will now be an instance of the class OAuth1Session
     oauth = requests_oauthlib.OAuth1Session(client_key, client_secret=client_secret)
 
+
     request_token_url = 'https://www.tumblr.com/oauth/request_token'
+
 
     # invoke the fetch_request_token method of the class OAuth1Session on our instance
     # it returns a dictionary that might look like this:
