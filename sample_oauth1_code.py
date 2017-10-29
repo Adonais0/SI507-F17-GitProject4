@@ -1,18 +1,18 @@
-# Forked from Chuyao
 # Contributed by Olivia
-# OAuth1 Code to access data from the Twitter API...
+# make change the sample to a tumblr one
+# OAuth1 Code to access data from the tumblr API...
 import requests_oauthlib
 import webbrowser
 import json
 
 
-# Get these from the Twitter website, by going to
+# Get these from the tumblr website, by going to
 # https://apps.twitter.com/ and creating an "app"
 # Don't fill in a callback_url and put in a placeholder for the website
 # Visit the Keys and Access Tokens tab for your app and grab the following two values
 
-client_key = "" # what Twitter calls Consumer Key
-client_secret = "" # What Twitter calls Consumer Secret
+client_key = "PyezS3Q4Smivb24d9SzZGYSuh--IaMfAkE" # what tumblr calls Consumer Key
+client_secret = "" # What tumblr calls Consumer Secret
 
 if not client_secret or not client_key:
     print("You need to fill in client_key and client_secret. See comments in the code around line 8-14")
@@ -31,7 +31,7 @@ def get_tokens():
     # after this line executes, oauth will now be an instance of the class OAuth1Session
     oauth = requests_oauthlib.OAuth1Session(client_key, client_secret=client_secret)
 
-    request_token_url = 'https://api.twitter.com/oauth/request_token'
+    request_token_url = 'https://www.tumblr.com/oauth/request_token'
 
     # invoke the fetch_request_token method of the class OAuth1Session on our instance
     # it returns a dictionary that might look like this:
@@ -50,7 +50,7 @@ def get_tokens():
 
     ## Step 2. Obtain authorization from the user (resource owner) to access their protected resources (images, tweets, etc.). This is commonly done by redirecting the user to a specific url to which you add the request token as a query parameter. Note that not all services will give you a verifier even if they should. Also the oauth_token given here will be the same as the one in the previous step.
 
-    base_authorization_url = 'https://api.twitter.com/oauth/authorize'
+    base_authorization_url = 'https://api.tumblr.com/oauth/authorize'
     # append the query parameters need to make it a full url.
     # they will include the resource_owner_key from the previus step,
     # which was stored in the oauth object above as an instance variable
@@ -90,7 +90,7 @@ def get_tokens():
                               resource_owner_secret=resource_owner_secret,
                               verifier=verifier)
 
-    access_token_url = 'https://api.twitter.com/oauth/access_token'
+    access_token_url = 'https://api.tumblr.com/oauth/access_token'
     oauth_tokens = oauth.fetch_access_token(access_token_url)
     # You get back something like this
     #{
@@ -149,8 +149,8 @@ oauth = requests_oauthlib.OAuth1Session(client_key,
 ## Same as getting .text attribute, then json.loads() on the value of the .text attribute, as you've seen before!
 
 
-# Make a request to the Tweet search endpoint, searching for the phrase 'University of Michigan', looking to get 3 Tweets back
-r = oauth.get("https://api.twitter.com/1.1/search/tweets.json", params = {'q': 'University of Michigan', 'count' : 3})
+# Make a request to the Tumble search endpoint, searching for the phrase 'University of Michigan', looking to get 3 Tweets back
+r = oauth.get("https://api.tumblr.com/v2/blog/{blog-identifier}/info?", params = {'q': 'University of Michigan', 'count' : 3})
 
 
 
@@ -193,32 +193,7 @@ print(twitter_data["statuses"][0]) # it's a list, so print the first element
 # http://docs.python-requests.org/en/latest/user/quickstart/#passing-parameters-in-urls
 
 
-collected_tweets = [] # where I'll collect all the tweet data I get as I page through my results, 5 at a time
-ids = []
-max_id = None
-my_params = {'count' : 5} # query parameters for 1st request
 
-for i in range(5):
-    if len(ids) > 0: # if we have already started the paging process
-        my_params['max_id'] = min(ids) - 1
-        # Twitter suggests that you take the minimum of the ids you got before, then subtract one from it, to make sure you get only ones you haven't received before. We can use the built-in min function here (could also accumulate by hand).
-    # Regardless, now we need to make a request to the logged in user's timeline with the query parameters
-    r = oauth.get("https://api.twitter.com/1.1/statuses/user_timeline.json",params = my_params)  # passes {'count': 5, 'max_id': whatever} ...
-    # Now, append this data to a list so we can collect all the paged results
-    collected_tweets.append(r.json())
-    next_five_ids = [tweet['id'] for tweet in r.json()]  # get the ids from the tweets we just got
-    ids = ids + next_five_ids # add them to the list, and start the for loop process over again
-
-print(ids)
-print(type(ids))
-# print(json.dumps(collected_tweets,indent=2))
-
-
-# a super simple version of "caching"
-# save the data we got back and collected in a file to check it out
-fr = open("paging_nested.txt","w")
-fr.write(json.dumps(collected_tweets))
-fr.close()
 
 # Now, can investigate using this data that you got.
 # If you're testing with the data in the file only, you may want to comment out all the code above this for a while so you don't inadvertently make a lot of requests to Twitter and then run out of request privileges for the day!
